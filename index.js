@@ -33,8 +33,6 @@ client.on("messageCreate", function(message) {
             }
             console.log(options.path);
 
-            var response = '';
-
             const req = https.request(options, res => {
 
                     let server = message.guild.id;
@@ -46,8 +44,16 @@ client.on("messageCreate", function(message) {
                         adapterCreator: message.guild.voiceAdapterCreator
                     });
                     //connection.on(joinVoiceChannel.Ready, () => {
+
+                    let array = [];
+
+                    const req = https.request(options, res => {
+                        res.setEncoding('utf8');
+                        res.on('data', function (chunk) {
+                            array.push(chunk);
+                        });
                         res.on('end', function() {
-                            fs.writeFileSync("/ramdisk/prova.wav", response)
+                            fs.writeFileSync("/ramdisk/prova.wav", array)
                                 .then(connection => {
                                     const dispatcher = connection.playFile("/ramdisk/prova.wav");
                                     dispatcher.on("end", end => {
@@ -61,6 +67,7 @@ client.on("messageCreate", function(message) {
                     //});
 
                     connection.destroy();
+                });
             });
 
             req.on('error', error => {
