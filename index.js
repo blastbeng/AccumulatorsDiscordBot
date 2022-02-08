@@ -29,7 +29,7 @@ client.on("messageCreate", function (message) {
         const exec = util.promisify(require('child_process').exec);
         async function lsWithGrep() {
             try {
-                const { stdout, stderr } = await exec("/usr/bin/curl -X 'GET' 'http://192.168.1.160:5500/api/tts?voice=marytts%3Aistc-lucia-hsmm&text=andate%20a%20fanculo%20stronzi%20luridi%20accumulatori&vocoder=high&denoiserStrength=0.03&cache=false'   -H 'accept: */*' --output /ramdisk/prova.wav; /usr/bin/ffmpeg -i prova.wav -c:a libopus -b:a 256000 prova.opus -y");
+                const { stdout, stderr } = await exec("/usr/bin/curl -X 'GET' 'http://192.168.1.160:5500/api/tts?voice=marytts%3Aistc-lucia-hsmm&text=andate%20a%20fanculo%20stronzi%20luridi%20accumulatori&vocoder=high&denoiserStrength=0.03&cache=false'   -H 'accept: */*' --output /ramdisk/prova.wav; /usr/bin/ffmpeg -i /ramdisk/prova.wav -c:a libopus -b:a 256000 prova.opus -y");
                 const connection = joinVoiceChannel({
                     channelId: message.member.voice.channel.id,
                     guildId: message.guild.id,
