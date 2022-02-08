@@ -40,14 +40,16 @@ client.on("messageCreate", function (message) {
                         const connection = joinVoiceChannel({
                             channelId: message.member.voice.channel.id,
                             guildId: message.guild.id,
-                            adapterCreator: message.guild.voiceAdapterCreator
+                            adapterCreator: message.guild.voiceAdapterCreator,
+                            selfDeaf: false,
+                            selfMute: false
                         });
                         const resource = createAudioResource("/ramdisk/prova.wav");
                         player.play(resource);
                         connection.subscribe(player);
-                        player.stop();
+                        //player.stop();
                         
-                        connection.destroy();
+                        //connection.destroy();
                     }
                 });
 
