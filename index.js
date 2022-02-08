@@ -25,8 +25,8 @@ function makeid(length) {
 }
 
 const api="http://192.168.1.160:5500/api/tts?";
-const voice="&voice=marytts%3Aistc-lucia-hsmm";
-const vocoder="&vocoder=high";
+const voice="&voice=larynx%3Alisa-glow_tts";
+const vocoder="&vocoder=low";
 const denoiser="&denoiserStrength=0.03";
 const cache="&cache=false";
 const text="&text=";
@@ -42,51 +42,57 @@ client.on("messageCreate", function (message) {
     const args = commandBody.split(' ');
     const command = args.shift().toLowerCase();
 
-    var words = "";
+          
+    const connection = joinVoiceChannel({
+        channelId: message.member.voice.channel.id,
+        guildId: message.guild.id,
+        adapterCreator: message.guild.voiceAdapterCreator,
+        selfDeaf: false,
+        selfMute: false
+    });
 
-    for(var i = 0; i < args.length; i++){
-        if(i===(args.length-1)){
-            words+=args[i];
-        }
-        else {
-            words+=args[i]+"%20";
-        }
-    }
 
-    var textParam=text+words;
-
-    if (command === "parla") {
-        async function dovoice() {
+    if (command === "stronz") {
             try {
 
-                //var file = makeid(10)+".wav";
-                var file = "accumulators-discord-bot.wav";
+                var words = "";
+
+                for(var i = 0; i < args.length; i++){
+                    if(i===(args.length-1)){
+                        words+=args[i];
+                    }
+                    else {
+                        words+=args[i]+"%20";
+                    }
+                }
+
+                var textParam=text+words;
+
+                var file = makeid(10)+".wav";
 
                 var params = api+voice+vocoder+denoiser+cache+textParam;
                 var outFile = path+file;
-                exec("/usr/bin/curl -X 'GET' '"+params+"' -H 'accept: */*' --output '"+outFile+"'", (error, stdout, stderr) => {                 
-                    const connection = joinVoiceChannel({
-                        channelId: message.member.voice.channel.id,
-                        guildId: message.guild.id,
-                        adapterCreator: message.guild.voiceAdapterCreator,
-                        selfDeaf: false,
-                        selfMute: false
-                    });
-                    connection.subscribe(player);
-                    
+                var child =  exec("/usr/bin/curl -X 'GET' '"+params+"' -H 'accept: */*' --output '"+outFile+"'");
+                child.stdout.pipe(process.stdout)
+                child.on('exit', function() {                    
                     const resource = createAudioResource(outFile, {
                         inputType: StreamType.Arbitrary,
                     });
+                    connection.subscribe(player);
                     player.play(resource);
-                });
+
+                    fs.unlink(outFile,function(err){
+                        if(err) return console.log(err);
+                   });
+                })     
                 
             }catch (err) {
                 console.error(err);
             };
-        };
-        dovoice();
 
     }
+
+    //connection.destroy();
 });
 
 client.login(config.BOT_TOKEN);
