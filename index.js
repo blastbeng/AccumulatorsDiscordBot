@@ -41,14 +41,16 @@ client.on("messageCreate", function (message) {
             });
             //connection.on(joinVoiceChannel.Ready, () => {
 
-            fs.writeFileSync(dir+"/prova.wav", data)
-                .then(connection => {
-                    const dispatcher = connection.playFile(dir+"/prova.wav");
-                    dispatcher.on("end", end => {
-                        VC.leave()
-                    });
-                })
-                .catch(console.error);
+            fs.writeFile(dir+"/prova.wav", data, (err) => {
+                    if (err)
+                        console.log(err);
+                    else {
+                        const dispatcher = connection.playFile(dir+"/prova.wav");
+                        dispatcher.on("end", end => {
+                            VC.leave()
+                        });
+                    }
+                });
 
             //console.log('The connection has entered the Ready state - ready to play audio!');
             //});
