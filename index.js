@@ -4,6 +4,7 @@ const config = require("./config.json");
 const { joinVoiceChannel, createAudioPlayer, createAudioResource, AudioPlayerStatus, StreamType  } = require('@discordjs/voice');
 const util = require('util');
 const player = createAudioPlayer();
+const { exec } = require("child_process");
 
 const client = new Discord.Client({
     intents: new Discord.Intents(32767)
@@ -55,7 +56,6 @@ client.on("messageCreate", function (message) {
     var textParam=text+words;
 
     if (command === "parla") {
-        const exec = util.promisify(require('child_process').exec);
         async function dovoice() {
             try {
 
@@ -78,12 +78,6 @@ client.on("messageCreate", function (message) {
                         inputType: StreamType.Arbitrary,
                     });
                     player.play(resource);
-                    //player.on(AudioPlayerStatus.AutoPaused, () => {
-                    //    fs.unlink(outFile, function (err) {
-                    //        if (err) throw err;
-                    //    });
-                    //});
-
                 });
                 
             }catch (err) {
