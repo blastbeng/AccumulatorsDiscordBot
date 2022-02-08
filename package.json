@@ -13,9 +13,6 @@
     "@discordjs/voice": "^0.8.0",
     "discord.js": "^13.6.0",
     "ffmpeg-static": "^4.4.1",
-    "fs": "^0.0.1-security",
-    "http": "^0.0.1-security",
-    "node-libcurl": "^2.3.4",
     "ytdl-core": "^4.10.1"
   }
 }

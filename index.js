@@ -1,20 +1,35 @@
 const Discord = require("discord.js");
-const https = require('http');
-const fs = require('fs');
-const { join } = require("path");
 const config = require("./config.json");
-const { joinVoiceChannel, createAudioPlayer, createAudioResource, StreamType  } = require('@discordjs/voice');
+const { joinVoiceChannel, createAudioPlayer, createAudioResource, AudioPlayerStatus, StreamType  } = require('@discordjs/voice');
 const util = require('util');
-
 const player = createAudioPlayer();
-const querystring = require("querystring");
-const { Curl } = require("node-libcurl");
 
 const client = new Discord.Client({
     intents: new Discord.Intents(32767)
 });
 
 const prefix = "!";
+const path = "/ramdisk/";
+
+function makeid(length) {
+    var result           = '';
+    var characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    var charactersLength = characters.length;
+    for ( var i = 0; i < length; i++ ) {
+      result += characters.charAt(Math.floor(Math.random() * 
+ charactersLength));
+   }
+   return result;
+}
+
+const api="http://192.168.1.160:5500/api/tts?";
+const voice="&voice=marytts%3Aistc-lucia-hsmm";
+const vocoder="&vocoder=high";
+const denoiser="&denoiserStrength=0.03";
+const cache="&cache=false";
+const text="&text=";
+
+
 
 
 client.on("messageCreate", function (message) {
@@ -25,12 +40,29 @@ client.on("messageCreate", function (message) {
     const args = commandBody.split(' ');
     const command = args.shift().toLowerCase();
 
+    var words = "";
+
+    for(var i = 0; i < args.length; i++){
+        if(i===(args.length-1)){
+            words+=args[i];
+        }
+        else {
+            words+=args[i]+"%20";
+        }
+    }
+
+    var textParam=text+words;
+
     if (command === "parla") {
         const exec = util.promisify(require('child_process').exec);
         async function lsWithGrep() {
             try {
-                var params = "";
-                const { stdout, stderr } = await exec("./getFile.sh "+params);
+
+                var file = makeid(10)+".wav";
+
+                var params = api+voice+vocoder+denoiser+cache+textParam;
+                var outFile = path+file;
+                const { stdout, stderr } = await exec("./getFile.sh "+params+" "+outFile);
                 const connection = joinVoiceChannel({
                     channelId: message.member.voice.channel.id,
                     guildId: message.guild.id,
@@ -40,10 +72,15 @@ client.on("messageCreate", function (message) {
                 });
                 connection.subscribe(player);
                 
-                const resource = createAudioResource('/ramdisk/prova.wav', {
+                const resource = createAudioResource(outFile, {
                     inputType: StreamType.Arbitrary,
                 });
                 player.play(resource);
+                player.on(AudioPlayerStatus.AutoPaused, () => {
+                    fs.unlink(outFile, function (err) {
+                        if (err) throw err;
+                    });
+                });
                 
             }catch (err) {
                 console.error(err);
