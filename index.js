@@ -47,7 +47,6 @@ client.on("messageCreate", function (message) {
                 
                     // Invoke the next step here however you like
                     console.log(content);   // Put all of the code here (not the best solution)
-                    processFile(content);   // Or put the next step in a function and invoke it
                 });
                 
                 const resource = createAudioResource('/ramdisk/prova.wav');
