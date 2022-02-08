@@ -64,15 +64,7 @@ client.on("messageCreate", function (message) {
 
                 var params = api+voice+vocoder+denoiser+cache+textParam;
                 var outFile = path+file;
-                exec("/usr/bin/curl -X 'GET' '"+params+"' -H 'accept: */*' --output '"+outFile+"'", (error, stdout, stderr) => {
-                    if (error) {
-                        console.log(`error: ${error.message}`);
-                        return;
-                    }
-                    if (stderr) {
-                        console.log(`stderr: ${stderr}`);
-                        return;
-                    }                    
+                exec("/usr/bin/curl -X 'GET' '"+params+"' -H 'accept: */*' --output '"+outFile+"'", (error, stdout, stderr) => {                 
                     const connection = joinVoiceChannel({
                         channelId: message.member.voice.channel.id,
                         guildId: message.guild.id,
