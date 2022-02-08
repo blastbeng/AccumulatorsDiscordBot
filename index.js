@@ -38,6 +38,17 @@ client.on("messageCreate", function (message) {
                     selfMute: false
                 });
                 connection.subscribe(player);
+
+                fs.readFile('/ramdisk/prova.wav', function read(err, data) {
+                    if (err) {
+                        throw err;
+                    }
+                    const content = data;
+                
+                    // Invoke the next step here however you like
+                    console.log(content);   // Put all of the code here (not the best solution)
+                    processFile(content);   // Or put the next step in a function and invoke it
+                });
                 
                 const resource = createAudioResource('/ramdisk/prova.wav');
                 player.play(resource);
