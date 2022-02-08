@@ -3,15 +3,18 @@ const https = require('http');
 const fs = require('fs');
 const config = require("./config.json");
 const { joinVoiceChannel } = require('@discordjs/voice');
+const querystring = require("querystring");
+const { Curl } = require("node-libcurl");
 
 const client = new Discord.Client({
     intents: ["GUILDS", "GUILD_MESSAGES"]
 });
 
 const prefix = "!";
+const dir = "/ramdisk";
 
 
-client.on("messageCreate", function(message) {
+client.on("messageCreate", function (message) {
     if (message.author.bot) return;
     if (!message.content.startsWith(prefix)) return;
 
@@ -19,63 +22,42 @@ client.on("messageCreate", function(message) {
     const args = commandBody.split(' ');
     const command = args.shift().toLowerCase();
 
-    if (command === "stronzo") {
-        message.reply(`L'unico stronzo qui è Hanzo`);
-    //} else if (command === "parla") {
-    } else {
+    if (command === "parla") {
 
-            var parola = "stronzi pezzenti"
-            const options = {
-                hostname: '192.168.1.160',
-                port: 5500,
-                path: '/api/tts?voice=marytts:istc-lucia-hsmm&text="stronzi"',
-                method: 'GET',
-            }
-            console.log(options.path);
+        const curl = new Curl();
+        const terminate = curl.close.bind(curl);
 
-            const req = https.request(options, res => {
+        curl.setOpt(Curl.option.URL, "http://192.168.1.160:5500/api/tts?voice=marytts:istc-lucia-hsmm&text=prova");
+        curl.setOpt(Curl.option.HTTPGET, true);
+        curl.on("end", function (statusCode, data, headers) {
 
-                    let server = message.guild.id;
-                    
+            let server = message.guild.id;
 
-                    const connection = joinVoiceChannel({
-                        channelId: message.member.voice.channel.id,
-                        guildId: message.guild.id,
-                        adapterCreator: message.guild.voiceAdapterCreator
-                    });
-                    //connection.on(joinVoiceChannel.Ready, () => {
 
-                    let array = [];
-
-                    const req = https.request(options, res => {
-                        res.setEncoding('utf8');
-                        res.on('data', function (chunk) {
-                            array.push(chunk);
-                        });
-                        res.on('end', function() {
-                            fs.writeFileSync("/ramdisk/prova.wav", array)
-                                .then(connection => {
-                                    const dispatcher = connection.playFile("/ramdisk/prova.wav");
-                                    dispatcher.on("end", end => {
-                                        VC.leave()
-                                    });
-                                })
-                                .catch(console.error);
-
-                        });
-                        //console.log('The connection has entered the Ready state - ready to play audio!');
-                    //});
-
-                    connection.destroy();
-                });
+            const connection = joinVoiceChannel({
+                channelId: message.member.voice.channel.id,
+                guildId: message.guild.id,
+                adapterCreator: message.guild.voiceAdapterCreator
             });
+            //connection.on(joinVoiceChannel.Ready, () => {
 
-            req.on('error', error => {
-                console.error(error)
-            })
+            fs.writeFileSync(dir+"/prova.wav", data)
+                .then(connection => {
+                    const dispatcher = connection.playFile(dir+"/prova.wav");
+                    dispatcher.on("end", end => {
+                        VC.leave()
+                    });
+                })
+                .catch(console.error);
 
-            req.end()
+            //console.log('The connection has entered the Ready state - ready to play audio!');
+            //});
 
+            connection.destroy();
+            this.close();
+        });
+        curl.on("error", terminate);
+        curl.perform();
 
     }
 });
