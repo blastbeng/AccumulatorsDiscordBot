@@ -56,38 +56,49 @@ client.on("messageCreate", function (message) {
 
     if (command === "parla") {
         const exec = util.promisify(require('child_process').exec);
-        async function lsWithGrep() {
+        async function dovoice() {
             try {
 
-                var file = makeid(10)+".wav";
+                //var file = makeid(10)+".wav";
+                var file = "accumulators-discord-bot.wav";
 
                 var params = api+voice+vocoder+denoiser+cache+textParam;
                 var outFile = path+file;
-                const { stdout, stderr } = await exec("/usr/bin/curl -X 'GET' '"+params+"' -H 'accept: */*' --output '"+outFile+"'");
-                const connection = joinVoiceChannel({
-                    channelId: message.member.voice.channel.id,
-                    guildId: message.guild.id,
-                    adapterCreator: message.guild.voiceAdapterCreator,
-                    selfDeaf: false,
-                    selfMute: false
-                });
-                connection.subscribe(player);
-                
-                const resource = createAudioResource(outFile, {
-                    inputType: StreamType.Arbitrary,
-                });
-                player.play(resource);
-                player.on(AudioPlayerStatus.AutoPaused, () => {
-                    fs.unlink(outFile, function (err) {
-                        if (err) throw err;
+                exec("/usr/bin/curl -X 'GET' '"+params+"' -H 'accept: */*' --output '"+outFile+"'", (error, stdout, stderr) => {
+                    if (error) {
+                        console.log(`error: ${error.message}`);
+                        return;
+                    }
+                    if (stderr) {
+                        console.log(`stderr: ${stderr}`);
+                        return;
+                    }                    
+                    const connection = joinVoiceChannel({
+                        channelId: message.member.voice.channel.id,
+                        guildId: message.guild.id,
+                        adapterCreator: message.guild.voiceAdapterCreator,
+                        selfDeaf: false,
+                        selfMute: false
                     });
+                    connection.subscribe(player);
+                    
+                    const resource = createAudioResource(outFile, {
+                        inputType: StreamType.Arbitrary,
+                    });
+                    player.play(resource);
+                    //player.on(AudioPlayerStatus.AutoPaused, () => {
+                    //    fs.unlink(outFile, function (err) {
+                    //        if (err) throw err;
+                    //    });
+                    //});
+
                 });
                 
             }catch (err) {
                 console.error(err);
             };
         };
-        lsWithGrep();
+        dovoice();
 
     }
 });

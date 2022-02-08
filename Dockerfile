@@ -1,4 +1,4 @@
-FROM node:17.4.0
+FROM node:current-alpine3.14
 
 # Create app directory
 WORKDIR /usr/src/app
@@ -15,6 +15,6 @@ RUN npm install
 # Bundle app source
 COPY . .
 
-RUN chmod +x ./getFile.sh
+RUN apk update && apk add ffmpeg
 
 CMD [ "node", "index.js" ]
