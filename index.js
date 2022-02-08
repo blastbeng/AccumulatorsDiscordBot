@@ -3,7 +3,7 @@ const https = require('http');
 const fs = require('fs');
 const { join } = require("path");
 const config = require("./config.json");
-const { joinVoiceChannel, createAudioPlayer, createAudioResource } = require('@discordjs/voice');
+const { joinVoiceChannel, createAudioPlayer, createAudioResource, StreamType  } = require('@discordjs/voice');
 const util = require('util');
 
 const player = createAudioPlayer();
@@ -29,7 +29,7 @@ client.on("messageCreate", function (message) {
         const exec = util.promisify(require('child_process').exec);
         async function lsWithGrep() {
             try {
-                const { stdout, stderr } = await exec("/usr/bin/curl -X 'GET' 'http://192.168.1.160:5500/api/tts?voice=marytts%3Aistc-lucia-hsmm&text=andate%20a%20fanculo%20stronzi%20luridi%20accumulatori&vocoder=high&denoiserStrength=0.03&cache=false'   -H 'accept: */*' --output /ramdisk/prova.wav");
+                const { stdout, stderr } = await exec("/usr/bin/curl -X 'GET' 'http://192.168.1.160:5500/api/tts?voice=marytts%3Aistc-lucia-hsmm&text=andate%20a%20fanculo%20stronzi%20luridi%20accumulatori&vocoder=high&denoiserStrength=0.03&cache=false'   -H 'accept: */*' --output /ramdisk/prova.wav; /usr/bin/ffmpeg -i prova.wav -c:a libopus -b:a 256000 prova.opus -y");
                 const connection = joinVoiceChannel({
                     channelId: message.member.voice.channel.id,
                     guildId: message.guild.id,
@@ -39,9 +39,9 @@ client.on("messageCreate", function (message) {
                 });
                 connection.subscribe(player);
                 
-                const resource = Voice.createAudioResource('/ramdisk/prova.wav', {
-                    inputType: Voice.StreamType.Arbitrary,
-            });
+                const resource = createAudioResource('/ramdisk/prova.opus', {
+                    inputType: StreamType.Arbitrary,
+                });
                 player.play(resource);
                 
             }catch (err) {
