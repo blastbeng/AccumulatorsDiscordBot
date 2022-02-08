@@ -11,7 +11,7 @@ const querystring = require("querystring");
 const { Curl } = require("node-libcurl");
 
 const client = new Discord.Client({
-    intents: ["GUILDS", "GUILD_MESSAGES"]
+    intents: new Discord.Intents(32767)
 });
 
 const prefix = "!";
