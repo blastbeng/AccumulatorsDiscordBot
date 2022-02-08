@@ -1,13 +1,14 @@
 const Discord = require("discord.js");
 const https = require('http');
 const fs = require('fs');
+const { join } = require("path");
 const config = require("./config.json");
-const { joinVoiceChannel } = require('@discordjs/voice');
-const { createAudioPlayer } = require('@discordjs/voice');
-const { createAudioResource } = require('@discordjs/voice');
+const { joinVoiceChannel, createAudioPlayer, createAudioResource } = require('@discordjs/voice');
+const util = require('util');
+
+const player = createAudioPlayer();
 const querystring = require("querystring");
 const { Curl } = require("node-libcurl");
-const player = createAudioPlayer();
 
 const client = new Discord.Client({
     intents: ["GUILDS", "GUILD_MESSAGES"]
@@ -26,40 +27,60 @@ client.on("messageCreate", function (message) {
 
     if (command === "parla") {
 
-        const curl = new Curl();
+        /*const curl = new Curl();
         const terminate = curl.close.bind(curl);
 
-        curl.setOpt(Curl.option.URL, "http://192.168.1.160:5500/api/tts?voice=marytts:istc-lucia-hsmm&text=prova");
+        curl.setOpt(Curl.option.URL, "http://192.168.1.160:5500/api/tts?voice=marytts%3Aistc-lucia-hsmm&text=andate%20a%20fanculo%20stronzi%20luridi%20accumulatori&vocoder=high&denoiserStrength=0.03&cache=false");
         curl.setOpt(Curl.option.HTTPGET, true);
         curl.on("end", function (statusCode, data, headers) {
-
-            fs.writeFile("/ramdisk/prova.wav", data, (err) => {
-                    if (err)
-                        console.log(err);
-                    else {
-                        const connection = joinVoiceChannel({
+            fs.writeFile('./prova.wav', data, function (err,datawav) {
+                if (err) {
+                    return console.log(err);
+                }
+                const connection = joinVoiceChannel({
                             channelId: message.member.voice.channel.id,
                             guildId: message.guild.id,
                             adapterCreator: message.guild.voiceAdapterCreator,
                             selfDeaf: false,
                             selfMute: false
                         });
-                        const resource = createAudioResource("/ramdisk/prova.wav");
+                        
+                        
+                        const resource = createAudioResource('./prova.wav');
                         player.play(resource);
                         connection.subscribe(player);
                         //player.stop();
                         
                         //connection.destroy();
-                    }
                 });
-
-            //console.log('The connection has entered the Ready state - ready to play audio!');
-            //});
 
             this.close();
         });
         curl.on("error", terminate);
-        curl.perform();
+        curl.perform();*/
+        const exec = util.promisify(require('child_process').exec);
+        async function lsWithGrep() {
+            try {
+                const { stdout, stderr } = await exec("/usr/bin/curl -X 'GET' 'http://192.168.1.160:5500/api/tts?voice=marytts%3Aistc-lucia-hsmm&text=andate%20a%20fanculo%20stronzi%20luridi%20accumulatori&vocoder=high&denoiserStrength=0.03&cache=false'   -H 'accept: */*' --output /ramdisk/prova.wav");
+                console.log('stdout:', stdout);
+                console.log('stderr:', stderr);
+                const connection = joinVoiceChannel({
+                    channelId: message.member.voice.channel.id,
+                    guildId: message.guild.id,
+                    adapterCreator: message.guild.voiceAdapterCreator,
+                    selfDeaf: false,
+                    selfMute: false
+                });
+                
+                
+                const resource = createAudioResource('/ramdisk/prova.wav');
+                player.play(resource);
+                connection.subscribe(player);
+            }catch (err) {
+                console.error(err);
+            };
+        };
+        lsWithGrep();
 
     }
 });
