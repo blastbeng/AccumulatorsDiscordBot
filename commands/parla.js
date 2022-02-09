@@ -51,7 +51,7 @@ module.exports = {
                         inputType: StreamType.Arbitrary,
                     });
                     player.play(resource);                     
-                    interaction.reply({ content: 'Il pezzente sta parlando' });
+                    interaction.reply({ content: 'Il pezzente sta parlando', ephemeral: true });
                 });
             })
         }); 
