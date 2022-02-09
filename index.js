@@ -2,16 +2,15 @@ const Discord = require("discord.js");
 const fs = require('fs');
 const config = require("./config.json");
 const { joinVoiceChannel, createAudioPlayer, createAudioResource, AudioPlayerStatus, StreamType  } = require('@discordjs/voice');
-const util = require('util');
 const player = createAudioPlayer();
-const { exec } = require("child_process");
+const fetch = require('node-fetch');
 
 const client = new Discord.Client({
     intents: new Discord.Intents(32767)
 });
 
 const prefix = "!";
-const path = Config.CACHE_DIR;
+const path = config.CACHE_DIR;
 
 function makeid(length) {
     var result           = '';
@@ -25,10 +24,7 @@ function makeid(length) {
 }
 
 const api="http://192.168.1.160:5500/api/tts?";
-const voice="&voice=larynx%3Alisa-glow_tts";
-const vocoder="&vocoder=low";
-const denoiser="&denoiserStrength=0.03";
-const cache="&cache=false";
+const voice="voice=marytts%3Aistc-lucia-hsmm&lang=it&vocoder=high&denoiserStrength=0.005&speakerId=&ssml=false&ssmlNumbers=true&ssmlDates=true&ssmlCurrency=true&cache=true";
 const text="&text=";
 
 
@@ -37,6 +33,7 @@ const text="&text=";
 client.on("messageCreate", function (message) {
     if (message.author.bot) return;
     if (!message.content.startsWith(prefix)) return;
+    if (message.member.voice.channel === null) return;
 
     const commandBody = message.content.slice(prefix.length);
     const args = commandBody.split(' ');
@@ -52,7 +49,7 @@ client.on("messageCreate", function (message) {
     });
 
 
-    if (command === "stronz") {
+    if (command === "parla") {
             try {
 
                 var words = "";
@@ -66,25 +63,32 @@ client.on("messageCreate", function (message) {
                     }
                 }
 
-                var textParam=text+words;
+                var textParam=text+words;      
+                var params = api+voice+textParam;
+                fetch(
+                    params,
+                    {
+                        method: 'GET',
+                        headers: { 'Accept': '*/*' }
+                    }
+                ).then(res => {
+                    new Promise((resolve, reject) => {
+                        var file = "discord_accumulators_tmp.wav";
+                        var outFile = path+"/"+file;
+                        const dest = fs.createWriteStream(outFile);
+                        res.body.pipe(dest);
+                        res.body.on('end', () => resolve());
+                        dest.on('error', reject);
 
-                var file = makeid(10)+".wav";
-
-                var params = api+voice+vocoder+denoiser+cache+textParam;
-                var outFile = path+file;
-                var child =  exec("/usr/bin/curl -X 'GET' '"+params+"' -H 'accept: */*' --output '"+outFile+"'");
-                child.stdout.pipe(process.stdout)
-                child.on('exit', function() {                    
-                    const resource = createAudioResource(outFile, {
-                        inputType: StreamType.Arbitrary,
-                    });
-                    connection.subscribe(player);
-                    player.play(resource);
-
-                    fs.unlink(outFile,function(err){
-                        if(err) return console.log(err);
-                   });
-                })     
+                        dest.on('finish', function(){                            
+                            const resource = createAudioResource(outFile, {
+                                inputType: StreamType.Arbitrary,
+                            });
+                            connection.subscribe(player);
+                            player.play(resource); 
+                        });
+                    })
+                }); 
                 
             }catch (err) {
                 console.error(err);
