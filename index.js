@@ -23,12 +23,36 @@ function makeid(length) {
    return result;
 }
 
+function doPlay(params, connection) {    
+    fetch(
+        params,
+        {
+            method: 'GET',
+            headers: { 'Accept': '*/*' }
+        }
+    ).then(res => {
+        new Promise((resolve, reject) => {
+            var file = "discord_accumulators_tmp.wav";
+            var outFile = path+"/"+file;
+            const dest = fs.createWriteStream(outFile);
+            res.body.pipe(dest);
+            res.body.on('end', () => resolve());
+            dest.on('error', reject);
+
+            dest.on('finish', function(){                            
+                const resource = createAudioResource(outFile, {
+                    inputType: StreamType.Arbitrary,
+                });
+                connection.subscribe(player);
+                player.play(resource); 
+            });
+        })
+    }); 
+}
+
 const api="http://192.168.1.160:5500/api/tts?";
 const voice="voice=marytts%3Aistc-lucia-hsmm&lang=it&vocoder=high&denoiserStrength=0.005&speakerId=&ssml=false&ssmlNumbers=true&ssmlDates=true&ssmlCurrency=true&cache=true";
 const text="&text=";
-
-
-
 
 client.on("messageCreate", function (message) {
     if (message.author.bot) return;
@@ -65,30 +89,8 @@ client.on("messageCreate", function (message) {
 
                 var textParam=text+words;      
                 var params = api+voice+textParam;
-                fetch(
-                    params,
-                    {
-                        method: 'GET',
-                        headers: { 'Accept': '*/*' }
-                    }
-                ).then(res => {
-                    new Promise((resolve, reject) => {
-                        var file = "discord_accumulators_tmp.wav";
-                        var outFile = path+"/"+file;
-                        const dest = fs.createWriteStream(outFile);
-                        res.body.pipe(dest);
-                        res.body.on('end', () => resolve());
-                        dest.on('error', reject);
 
-                        dest.on('finish', function(){                            
-                            const resource = createAudioResource(outFile, {
-                                inputType: StreamType.Arbitrary,
-                            });
-                            connection.subscribe(player);
-                            player.play(resource); 
-                        });
-                    })
-                }); 
+                doPlay(params, connection);
                 
             }catch (err) {
                 console.error(err);
