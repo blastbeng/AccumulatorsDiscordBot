@@ -11,7 +11,7 @@ const client = new Discord.Client({
 });
 
 const prefix = "!";
-const path = "/ramdisk/";
+const path = Config.CACHE_DIR;
 
 function makeid(length) {
     var result           = '';

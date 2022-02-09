@@ -1,5 +1,9 @@
 FROM node:current-alpine3.14
 
+RUN apk add --update --no-cache python3 ffmpeg autoconf make gcc musl-dev g++ && ln -sf python3 /usr/bin/python
+RUN python3 -m ensurepip
+RUN pip3 install --no-cache --upgrade pip setuptools
+
 # Create app directory
 WORKDIR /usr/src/app
 
@@ -14,7 +18,5 @@ RUN npm install
 
 # Bundle app source
 COPY . .
-
-RUN apk update && apk add ffmpeg
 
 CMD [ "node", "index.js" ]

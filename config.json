@@ -1,3 +1,4 @@
 {
-    "BOT_TOKEN": "TOKEN"
+    "BOT_TOKEN": "BOT_TOKEN",
+    "CACHE_DIR": "/ramdisk"
 }
